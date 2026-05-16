@@ -133,6 +133,7 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     savingsRate,
     totalMonthlyExpenses,
     monthsSavingsLast,
+    projectedSavings12m,
   });
 
   return {
@@ -154,6 +155,7 @@ interface InsightContext {
   savingsRate: number;
   totalMonthlyExpenses: number;
   monthsSavingsLast: number | null;
+  projectedSavings12m: number[];
 }
 
 /**

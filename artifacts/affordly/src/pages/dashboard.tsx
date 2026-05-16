@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { format } from "date-fns";
-import { Plus, ArrowRight, ShieldCheck, AlertTriangle, AlertCircle, Activity, PiggyBank, CreditCard, Banknote, Trash2 } from "lucide-react";
+import { Plus, ArrowRight, ShieldCheck, AlertTriangle, AlertCircle, Activity, PiggyBank, CreditCard, Banknote, Trash2, Calculator } from "lucide-react";
 import { useGetDashboardSummary, useGetRecentSimulations, useDeleteSimulation, getGetDashboardSummaryQueryKey, getGetRecentSimulationsQueryKey, getListSimulationsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
