@@ -67,6 +67,8 @@ router.post("/simulations", async (req, res): Promise<void> => {
       riskLevel: result.riskLevel,
       aiInsight: result.aiInsight,
       projectedSavings12m: result.projectedSavings12m,
+      savingsAfterDecision: String(result.savingsAfterDecision),
+      recommendations: result.recommendations,
     })
     .returning();
 
@@ -126,6 +128,8 @@ function rowToResponse(row: typeof simulationsTable.$inferSelect) {
     riskLevel: row.riskLevel as "Safe" | "Moderate" | "Risky" | "Dangerous",
     aiInsight: row.aiInsight,
     projectedSavings12m: row.projectedSavings12m as number[],
+    savingsAfterDecision: row.savingsAfterDecision != null ? Number(row.savingsAfterDecision) : 0,
+    recommendations: (row.recommendations as string[] | null) ?? [],
     createdAt: row.createdAt.toISOString(),
   };
 }

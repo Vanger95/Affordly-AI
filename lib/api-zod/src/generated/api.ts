@@ -41,6 +41,8 @@ export const ListSimulationsResponseItem = zod.object({
   "riskLevel": zod.enum(['Safe', 'Moderate', 'Risky', 'Dangerous']),
   "aiInsight": zod.string(),
   "projectedSavings12m": zod.array(zod.number()),
+  "savingsAfterDecision": zod.number().optional(),
+  "recommendations": zod.array(zod.string()).optional(),
   "createdAt": zod.string()
 })
 export const ListSimulationsResponse = zod.array(ListSimulationsResponseItem)
@@ -95,6 +97,8 @@ export const GetSimulationResponse = zod.object({
   "riskLevel": zod.enum(['Safe', 'Moderate', 'Risky', 'Dangerous']),
   "aiInsight": zod.string(),
   "projectedSavings12m": zod.array(zod.number()),
+  "savingsAfterDecision": zod.number().optional(),
+  "recommendations": zod.array(zod.string()).optional(),
   "createdAt": zod.string()
 })
 
@@ -146,6 +150,8 @@ export const GetRecentSimulationsResponseItem = zod.object({
   "riskLevel": zod.enum(['Safe', 'Moderate', 'Risky', 'Dangerous']),
   "aiInsight": zod.string(),
   "projectedSavings12m": zod.array(zod.number()),
+  "savingsAfterDecision": zod.number().optional(),
+  "recommendations": zod.array(zod.string()).optional(),
   "createdAt": zod.string()
 })
 export const GetRecentSimulationsResponse = zod.array(GetRecentSimulationsResponseItem)

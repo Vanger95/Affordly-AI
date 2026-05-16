@@ -240,6 +240,12 @@ components:
           type: array
           items:
             type: number
+        savingsAfterDecision:
+          type: number
+        recommendations:
+          type: array
+          items:
+            type: string
         createdAt:
           type: string
 

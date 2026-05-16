@@ -58,6 +58,8 @@ export interface Simulation {
   riskLevel: SimulationRiskLevel;
   aiInsight: string;
   projectedSavings12m: number[];
+  savingsAfterDecision?: number;
+  recommendations?: string[];
   createdAt: string;
 }
 

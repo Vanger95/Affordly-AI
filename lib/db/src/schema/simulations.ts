@@ -19,10 +19,12 @@ export const simulationsTable = pgTable("simulations", {
   monthlyCashflow: numeric("monthly_cashflow", { precision: 12, scale: 2 }).notNull(),
   savingsRate: numeric("savings_rate", { precision: 6, scale: 4 }).notNull(),
   monthsSavingsLast: numeric("months_savings_last", { precision: 10, scale: 2 }),
+  savingsAfterDecision: numeric("savings_after_decision", { precision: 12, scale: 2 }),
   affordabilityScore: numeric("affordability_score", { precision: 5, scale: 2 }).notNull(),
   riskLevel: text("risk_level").notNull(),
   aiInsight: text("ai_insight").notNull(),
   projectedSavings12m: jsonb("projected_savings_12m").notNull().$type<number[]>(),
+  recommendations: jsonb("recommendations").$type<string[]>(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
