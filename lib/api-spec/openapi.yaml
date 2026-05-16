@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Affordly AI API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: simulations
+    description: Financial simulation operations
+  - name: dashboard
+    description: Dashboard summary operations
 paths:
   /healthz:
     get:
@@ -24,6 +28,103 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /simulations:
+    get:
+      operationId: listSimulations
+      tags: [simulations]
+      summary: List all simulations
+      responses:
+        "200":
+          description: List of simulations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Simulation"
+    post:
+      operationId: createSimulation
+      tags: [simulations]
+      summary: Create a new simulation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimulationInput"
+      responses:
+        "201":
+          description: Created simulation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Simulation"
+        "400":
+          description: Validation error
+
+  /simulations/{id}:
+    get:
+      operationId: getSimulation
+      tags: [simulations]
+      summary: Get a simulation by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Simulation detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Simulation"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteSimulation
+      tags: [simulations]
+      summary: Delete a simulation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/recent:
+    get:
+      operationId: getRecentSimulations
+      tags: [dashboard]
+      summary: Get 5 most recent simulations
+      responses:
+        "200":
+          description: Recent simulations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Simulation"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +135,139 @@ components:
       required:
         - status
 
+    SimulationInput:
+      type: object
+      required:
+        - scenarioName
+        - monthlyIncome
+        - monthlyRent
+        - monthlyFood
+        - monthlyTransport
+        - monthlySubscriptions
+        - monthlyOther
+        - savingsBalance
+        - debtBalance
+        - decisionCost
+      properties:
+        scenarioName:
+          type: string
+          minLength: 1
+        monthlyIncome:
+          type: number
+        monthlyRent:
+          type: number
+        monthlyFood:
+          type: number
+        monthlyTransport:
+          type: number
+        monthlySubscriptions:
+          type: number
+        monthlyOther:
+          type: number
+        savingsBalance:
+          type: number
+        debtBalance:
+          type: number
+        decisionCost:
+          type: number
+        monthlyExtraCost:
+          type: ["number", "null"]
+
+    Simulation:
+      type: object
+      required:
+        - id
+        - scenarioName
+        - monthlyIncome
+        - monthlyRent
+        - monthlyFood
+        - monthlyTransport
+        - monthlySubscriptions
+        - monthlyOther
+        - savingsBalance
+        - debtBalance
+        - decisionCost
+        - totalMonthlyExpenses
+        - monthlyCashflow
+        - savingsRate
+        - monthsSavingsLast
+        - affordabilityScore
+        - riskLevel
+        - aiInsight
+        - projectedSavings12m
+        - createdAt
+      properties:
+        id:
+          type: integer
+        scenarioName:
+          type: string
+        monthlyIncome:
+          type: number
+        monthlyRent:
+          type: number
+        monthlyFood:
+          type: number
+        monthlyTransport:
+          type: number
+        monthlySubscriptions:
+          type: number
+        monthlyOther:
+          type: number
+        savingsBalance:
+          type: number
+        debtBalance:
+          type: number
+        decisionCost:
+          type: number
+        monthlyExtraCost:
+          type: ["number", "null"]
+        totalMonthlyExpenses:
+          type: number
+        monthlyCashflow:
+          type: number
+        savingsRate:
+          type: number
+        monthsSavingsLast:
+          type: ["number", "null"]
+        affordabilityScore:
+          type: number
+        riskLevel:
+          type: string
+          enum: [Safe, Moderate, Risky, Dangerous]
+        aiInsight:
+          type: string
+        projectedSavings12m:
+          type: array
+          items:
+            type: number
+        createdAt:
+          type: string
+
+    DashboardSummary:
+      type: object
+      required:
+        - totalSimulations
+        - avgAffordabilityScore
+        - safeCount
+        - moderateCount
+        - riskyCount
+        - dangerousCount
+        - avgMonthlyCashflow
+        - avgSavingsRate
+      properties:
+        totalSimulations:
+          type: integer
+        avgAffordabilityScore:
+          type: number
+        safeCount:
+          type: integer
+        moderateCount:
+          type: integer
+        riskyCount:
+          type: integer
+        dangerousCount:
+          type: integer
+        avgMonthlyCashflow:
+          type: number
+        avgSavingsRate:
+          type: number
