@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Briefcase, ArrowRight, BarChart3, Calculator } from "lucide-react";
+import { Sparkles, ArrowRight, LayoutDashboard, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -9,41 +9,55 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg tracking-tight hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Briefcase className="w-4 h-4 text-primary-foreground" />
+      <header className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-background/80 backdrop-blur-xl">
+        <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between max-w-7xl">
+          <Link href="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+              <Sparkles className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span>Affordly AI</span>
+            <span className="font-bold text-lg tracking-tight text-foreground">Affordly</span>
+            <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-primary/15 text-primary border border-primary/20 ml-0.5">AI</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Dashboard
+          <nav className="hidden md:flex items-center gap-1">
+            <Link href="/dashboard">
+              <button className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                location.startsWith('/dashboard') 
+                  ? 'bg-white/10 text-foreground' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+              }`}>
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                Dashboard
+              </button>
             </Link>
-            <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Pricing
+            <Link href="/pricing">
+              <button className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                location === '/pricing'
+                  ? 'bg-white/10 text-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+              }`}>
+                Pricing
+              </button>
             </Link>
           </nav>
 
           <div className="flex items-center gap-3">
             {isDashboard ? (
-              <Button asChild size="sm">
+              <Button asChild size="sm" className="h-8 text-sm font-medium shadow-lg shadow-primary/20">
                 <Link href="/simulate">
-                  <Calculator className="w-4 h-4 mr-2" />
+                  <Calculator className="w-3.5 h-3.5 mr-1.5" />
                   New Simulation
                 </Link>
               </Button>
             ) : (
               <>
-                <Button variant="ghost" asChild className="hidden sm:inline-flex">
+                <Button variant="ghost" asChild className="hidden sm:inline-flex h-8 text-sm text-muted-foreground hover:text-foreground">
                   <Link href="/dashboard">Log in</Link>
                 </Button>
-                <Button asChild>
+                <Button asChild size="sm" className="h-8 text-sm font-medium shadow-lg shadow-primary/20">
                   <Link href="/simulate">
-                    Try a Demo
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    Run a simulation
+                    <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                   </Link>
                 </Button>
               </>
@@ -56,15 +70,25 @@ export function Layout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <footer className="border-t py-12 bg-muted/30">
-        <div className="container mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2 opacity-50">
-            <Briefcase className="w-5 h-5" />
-            <span className="font-bold tracking-tight">Affordly AI</span>
+      <footer className="border-t border-white/[0.06] py-10 bg-background">
+        <div className="container mx-auto px-4 md:px-8 max-w-7xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center">
+              <Sparkles className="w-3 h-3 text-primary" />
+            </div>
+            <span className="font-semibold text-sm text-foreground/60">Affordly AI</span>
           </div>
-          
-          <div className="text-sm text-muted-foreground max-w-lg text-center md:text-right">
-            This tool provides educational simulations only and is not financial advice.
+
+          <p className="text-xs text-muted-foreground text-center max-w-sm">
+            This tool provides educational simulations only and is not financial advice. Your data is not sold or shared.
+          </p>
+
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
+            <span className="opacity-30">·</span>
+            <Link href="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link>
+            <span className="opacity-30">·</span>
+            <span>© 2026</span>
           </div>
         </div>
       </footer>
