@@ -47,3 +47,21 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+.replit
+replit.nix
+.upm/
+.config/
+
+# Environment secrets
+.env
+.env.local
+.env.*.local
+
+# pnpm
+.pnpm-store/
+
+# Build map files
+*.mjs.map
+
+# Drizzle generated migrations
+**/drizzle/
