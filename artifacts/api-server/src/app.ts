@@ -25,7 +25,27 @@ app.use(
     },
   }),
 );
-app.use(cors());
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // Allow same-origin, Vercel preview URLs, and the production domain
+      const allowed = [
+        /\.vercel\.app$/,
+        /localhost/,
+        /\.replit\.dev$/,
+        /\.kirk\.replit\.dev$/,
+      ];
+      if (!origin || allowed.some((r) => r.test(origin))) {
+        cb(null, true);
+      } else {
+        cb(null, true); // open during development; tighten for production
+      }
+    },
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

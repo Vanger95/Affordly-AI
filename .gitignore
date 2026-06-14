@@ -65,3 +65,6 @@ replit.nix
 
 # Drizzle generated migrations
 **/drizzle/
+
+# Vercel
+.vercel/
