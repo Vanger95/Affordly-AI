@@ -1,15 +1,14 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
-import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useCreateSimulation, getListSimulationsQueryKey, getGetDashboardSummaryQueryKey, getGetRecentSimulationsQueryKey } from "@workspace/api-client-react";
+import { runEngine } from "@/lib/simulationEngine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Calculator, PoundSterling, Info } from "lucide-react";
+import { Calculator, Info } from "lucide-react";
 
 const simulationSchema = z.object({
   scenarioName: z.string().min(1, "Scenario name is required"),
@@ -64,8 +63,7 @@ function CurrencyField({ label, name, description, form }: {
 
 export default function Simulate() {
   const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
-  const createSim = useCreateSimulation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<SimulationFormData>({
     resolver: zodResolver(simulationSchema),
@@ -85,31 +83,58 @@ export default function Simulate() {
   });
 
   const onSubmit = (data: SimulationFormData) => {
-    createSim.mutate(
-      {
-        data: {
-          scenarioName: data.scenarioName,
-          monthlyIncome: data.monthlyIncome,
-          monthlyRent: data.monthlyRent,
-          monthlyFood: data.monthlyFood,
-          monthlyTransport: data.monthlyTransport,
-          monthlySubscriptions: data.monthlySubscriptions,
-          monthlyOther: data.monthlyOther,
-          savingsBalance: data.savingsBalance,
-          debtBalance: data.debtBalance,
-          decisionCost: data.decisionCost,
-          monthlyExtraCost: data.monthlyExtraCost !== "" && data.monthlyExtraCost !== undefined ? data.monthlyExtraCost : null,
-        },
-      },
-      {
-        onSuccess: (simulation) => {
-          queryClient.invalidateQueries({ queryKey: getListSimulationsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getGetRecentSimulationsQueryKey() });
-          setLocation(`/simulations/${simulation.id}`);
-        },
-      }
-    );
+    setIsSubmitting(true);
+
+    const extraCost =
+      data.monthlyExtraCost !== "" && data.monthlyExtraCost !== undefined
+        ? Number(data.monthlyExtraCost)
+        : null;
+
+    const result = runEngine({
+      scenarioName: data.scenarioName,
+      monthlyIncome: data.monthlyIncome,
+      monthlyRent: data.monthlyRent,
+      monthlyFood: data.monthlyFood,
+      monthlyTransport: data.monthlyTransport,
+      monthlySubscriptions: data.monthlySubscriptions,
+      monthlyOther: data.monthlyOther,
+      savingsBalance: data.savingsBalance,
+      debtBalance: data.debtBalance,
+      decisionCost: data.decisionCost,
+      monthlyExtraCost: extraCost,
+    });
+
+    const id = `local_${Date.now()}`;
+    const simulation = {
+      id,
+      scenarioName: data.scenarioName,
+      monthlyIncome: data.monthlyIncome,
+      monthlyRent: data.monthlyRent,
+      monthlyFood: data.monthlyFood,
+      monthlyTransport: data.monthlyTransport,
+      monthlySubscriptions: data.monthlySubscriptions,
+      monthlyOther: data.monthlyOther,
+      savingsBalance: data.savingsBalance,
+      debtBalance: data.debtBalance,
+      decisionCost: data.decisionCost,
+      monthlyExtraCost: extraCost,
+      affordabilityScore: result.affordabilityScore,
+      riskLevel: result.riskLevel,
+      monthlyCashflow: result.monthlyCashflow,
+      savingsRate: result.savingsRate,
+      totalMonthlyExpenses: result.totalExpenses,
+      monthsSavingsLast: result.monthsSavingsLast,
+      projectedSavings12m: result.savingsProjection,
+      savingsAfterDecision: result.savingsAfterDecision,
+      recommendations: result.recommendations,
+      aiInsight: result.aiInsight,
+      createdAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem(`affordly_sim_${id}`, JSON.stringify(simulation));
+
+    setIsSubmitting(false);
+    setLocation(`/simulations/${id}`);
   };
 
   return (
@@ -211,10 +236,10 @@ export default function Simulate() {
               type="submit"
               size="lg"
               className="w-full sm:w-auto"
-              disabled={createSim.isPending}
+              disabled={isSubmitting}
               data-testid="button-submit-simulation"
             >
-              {createSim.isPending ? "Running Simulation..." : "Run Simulation"}
+              {isSubmitting ? "Running Simulation..." : "Run Simulation"}
               <Calculator className="w-4 h-4 ml-2" />
             </Button>
             <Button
