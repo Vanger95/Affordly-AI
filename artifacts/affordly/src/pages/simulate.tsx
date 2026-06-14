@@ -107,21 +107,32 @@ export default function Simulate() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          scenario_name: data.scenarioName,
-          income: data.monthlyIncome,
-          expenses: result.totalExpenses,
-          savings: data.savingsBalance,
-          debt: data.debtBalance,
-          decision_cost: data.decisionCost,
-          monthly_extra_cost: extraCost ?? 0,
-          affordability_score: result.affordabilityScore,
-          risk_level: result.riskLevel,
-          ai_insight: result.aiInsight,
+          scenario_name:          data.scenarioName,
+          monthly_income:         data.monthlyIncome,
+          monthly_rent:           data.monthlyRent,
+          monthly_food:           data.monthlyFood,
+          monthly_transport:      data.monthlyTransport,
+          monthly_subscriptions:  data.monthlySubscriptions,
+          monthly_other:          data.monthlyOther,
+          savings_balance:        data.savingsBalance,
+          debt_balance:           data.debtBalance,
+          decision_cost:          data.decisionCost,
+          monthly_extra_cost:     extraCost ?? 0,
+          total_monthly_expenses: result.totalExpenses,
+          monthly_cashflow:       result.monthlyCashflow,
+          savings_rate:           result.savingsRate,
+          months_savings_last:    result.monthsSavingsLast,
+          affordability_score:    result.affordabilityScore,
+          risk_level:             result.riskLevel,
+          ai_insight:             result.aiInsight,
+          projected_savings_12m:  result.savingsProjection,
+          savings_after_decision: result.savingsAfterDecision,
+          recommendations:        result.recommendations,
         }),
       });
       if (resp.ok) {
         const saved = await resp.json();
-        if (saved?.simulation?.id) simId = saved.simulation.id;
+        if (saved?.simulation?.id) simId = String(saved.simulation.id);
       }
     } catch {
       // API unavailable — fall back to local ID
