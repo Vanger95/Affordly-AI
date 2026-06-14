@@ -1,8 +1,8 @@
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { format } from "date-fns";
-import { Plus, ArrowRight, ShieldCheck, AlertTriangle, AlertCircle, Activity, PiggyBank, Banknote, Trash2, Calculator, TrendingUp, TrendingDown } from "lucide-react";
-import { useGetDashboardSummary, useGetRecentSimulations, useDeleteSimulation, getGetDashboardSummaryQueryKey, getGetRecentSimulationsQueryKey, getListSimulationsQueryKey } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { Plus, ArrowRight, ShieldCheck, AlertTriangle, AlertCircle, Activity, PiggyBank, Banknote, Calculator, TrendingUp, TrendingDown } from "lucide-react";
+import { useGetDashboardSummary } from "@workspace/api-client-react";
 import { ResponsiveContainer, AreaChart, Area, Tooltip, XAxis } from "recharts";
 
 import { Button } from "@/components/ui/button";
@@ -49,25 +49,39 @@ function ScoreRing({ score }: { score: number }) {
 
 const miniChartData = Array.from({ length: 12 }, (_, i) => ({ m: i + 1, v: 2000 + Math.sin(i * 0.6) * 400 + i * 80 }));
 
+interface RecentSim {
+  id: string;
+  scenarioName: string;
+  affordabilityScore: number;
+  riskLevel: string;
+  createdAt: string;
+}
+
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
 
   const { data: summary, isLoading: isLoadingSummary } = useGetDashboardSummary();
-  const { data: recent, isLoading: isLoadingRecent } = useGetRecentSimulations();
-  const deleteSim = useDeleteSimulation();
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Delete this simulation?")) {
-      deleteSim.mutate({ id }, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getGetRecentSimulationsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getListSimulationsQueryKey() });
-        },
-      });
-    }
-  };
+  const [recent, setRecent] = useState<RecentSim[]>([]);
+  const [isLoadingRecent, setIsLoadingRecent] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/dashboard/recent")
+      .then(r => r.json())
+      .then(data => {
+        setRecent(
+          (data.simulations || []).map((s: any) => ({
+            id: s.id,
+            scenarioName: s.scenario_name,
+            affordabilityScore: Number(s.affordability_score),
+            riskLevel: s.risk_level,
+            createdAt: s.created_at,
+          }))
+        );
+      })
+      .catch(() => setRecent([]))
+      .finally(() => setIsLoadingRecent(false));
+  }, []);
 
   const riskRows = [
     { key: "safeCount", label: "Safe" },
@@ -175,7 +189,7 @@ export default function Dashboard() {
             <div className="space-y-3">
               {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full rounded-xl bg-white/5" />)}
             </div>
-          ) : recent && recent.length > 0 ? (
+          ) : recent.length > 0 ? (
             <div className="space-y-3">
               {recent.map(sim => {
                 const risk = getRiskConfig(sim.riskLevel);
@@ -199,20 +213,16 @@ export default function Dashboard() {
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span>{format(new Date(sim.createdAt), "d MMM yyyy")}</span>
                         <span className="opacity-40">·</span>
-                        <span>Decision: <span className="text-foreground/70 font-medium">{formatCurrency(sim.decisionCost)}</span></span>
+                        <span className={`font-mono font-semibold ${
+                          sim.affordabilityScore >= 75 ? "text-emerald-400"
+                          : sim.affordabilityScore >= 50 ? "text-amber-400"
+                          : sim.affordabilityScore >= 25 ? "text-orange-400"
+                          : "text-red-400"
+                        }`}>{sim.affordabilityScore}/100</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <button
-                        className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/10 text-muted-foreground hover:text-red-400"
-                        onClick={(e) => { e.stopPropagation(); handleDelete(sim.id); }}
-                        disabled={deleteSim.isPending}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
-                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors flex-shrink-0" />
                   </div>
                 );
               })}
@@ -224,7 +234,7 @@ export default function Dashboard() {
               </div>
               <h3 className="font-semibold text-foreground mb-1.5">No simulations yet</h3>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-6">
-                Run your first simulation to see how a financial decision affects your cashflow.
+                Run your first simulation.
               </p>
               <Button asChild size="sm" className="font-semibold">
                 <Link href="/simulate">Create simulation</Link>
