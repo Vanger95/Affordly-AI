@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -63,7 +62,6 @@ function CurrencyField({ label, name, description, form }: {
 
 export default function Simulate() {
   const [, setLocation] = useLocation();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<SimulationFormData>({
     resolver: zodResolver(simulationSchema),
@@ -82,9 +80,7 @@ export default function Simulate() {
     },
   });
 
-  const onSubmit = (data: SimulationFormData) => {
-    setIsSubmitting(true);
-
+  const onSubmit = async (data: SimulationFormData) => {
     const extraCost =
       data.monthlyExtraCost !== "" && data.monthlyExtraCost !== undefined
         ? Number(data.monthlyExtraCost)
@@ -104,9 +100,35 @@ export default function Simulate() {
       monthlyExtraCost: extraCost,
     });
 
-    const id = `local_${Date.now()}`;
+    let simId: string = `local_${Date.now()}`;
+
+    try {
+      const resp = await fetch("/api/simulations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scenario_name: data.scenarioName,
+          income: data.monthlyIncome,
+          expenses: result.totalExpenses,
+          savings: data.savingsBalance,
+          debt: data.debtBalance,
+          decision_cost: data.decisionCost,
+          monthly_extra_cost: extraCost ?? 0,
+          affordability_score: result.affordabilityScore,
+          risk_level: result.riskLevel,
+          ai_insight: result.aiInsight,
+        }),
+      });
+      if (resp.ok) {
+        const saved = await resp.json();
+        if (saved?.id) simId = saved.id;
+      }
+    } catch {
+      // API unavailable — fall back to local ID
+    }
+
     const simulation = {
-      id,
+      id: simId,
       scenarioName: data.scenarioName,
       monthlyIncome: data.monthlyIncome,
       monthlyRent: data.monthlyRent,
@@ -131,11 +153,11 @@ export default function Simulate() {
       createdAt: new Date().toISOString(),
     };
 
-    localStorage.setItem(`affordly_sim_${id}`, JSON.stringify(simulation));
-
-    setIsSubmitting(false);
-    setLocation(`/simulations/${id}`);
+    localStorage.setItem(`affordly_sim_${simId}`, JSON.stringify(simulation));
+    setLocation(`/simulations/${simId}`);
   };
+
+  const isSubmitting = form.formState.isSubmitting;
 
   return (
     <div className="container mx-auto px-4 md:px-8 py-8 max-w-3xl">
