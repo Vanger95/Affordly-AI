@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation, Link } from "wouter";
+import { mapApiSimulation } from "@/lib/simulationMapper";
 import {
   LineChart,
   Line,
@@ -138,11 +139,27 @@ export default function SimulationResults() {
     if (raw) {
       try {
         setSim(JSON.parse(raw) as LocalSimulation);
+        setIsLoading(false);
+        return;
       } catch {
-        setSim(null);
+        // fall through to API
       }
     }
-    setIsLoading(false);
+
+    fetch(`/api/simulations/${id}`)
+      .then(r => {
+        if (!r.ok) throw new Error("not found");
+        return r.json();
+      })
+      .then(data => {
+        if (data.simulation) {
+          setSim(mapApiSimulation(data.simulation) as LocalSimulation);
+        } else {
+          setSim(null);
+        }
+      })
+      .catch(() => setSim(null))
+      .finally(() => setIsLoading(false));
   }, [id]);
 
   const handleDelete = () => {

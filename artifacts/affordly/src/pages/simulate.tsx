@@ -121,7 +121,7 @@ export default function Simulate() {
       });
       if (resp.ok) {
         const saved = await resp.json();
-        if (saved?.id) simId = saved.id;
+        if (saved?.simulation?.id) simId = saved.simulation.id;
       }
     } catch {
       // API unavailable — fall back to local ID
